@@ -98,7 +98,7 @@ begin
  CompletaURL := 'http://localhost:8080/datasnap/rest/TServerMethods/';
 
  case TipoRetorno of
-   pTodos: CompletaURL := CompletaURL + 'ListarPessoa';
+   pTodos: CompletaURL := CompletaURL + 'Pessoa';
    pPorID: ;
    pMaiorIDPessoa: CompletaURL := CompletaURL + 'RetornaMaiorID';
    pMaiorIDEndereco: ;

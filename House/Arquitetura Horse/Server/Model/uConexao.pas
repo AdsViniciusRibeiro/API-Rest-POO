@@ -4,7 +4,7 @@ uses
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, Data.DB, FireDAC.Comp.Client, FireDAC.Phys.MySQLDef,
   FireDAC.Phys.FB, FireDAC.DApt, FireDAC.VCLUI.Wait, FireDAC.Phys.PG,
-  System.SysUtils;
+  System.SysUtils, System.JSON, DataSetConverter4D.Impl;
 type
   TConexaoPG = class
   private
@@ -18,7 +18,8 @@ type
     destructor Destroy; override;
     function GetConexao: TFDConnection;
     function CriarQuery: TFDQuery;
-    function Executar(Script : string; Parametros : array of Variant; MsgErro : string = 'Erro ao gravar Script.') : Boolean;
+    function ExecutarScript(Script : string; Parametros : array of Variant; MsgErro : string = 'Erro ao gravar Script.') : Boolean;
+    function DataSetToJson(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
   end;
 implementation
 { TConexao }
@@ -57,7 +58,7 @@ begin
   inherited;
 end;
 
-function TConexaoPG.Executar(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): Boolean;
+function TConexaoPG.ExecutarScript(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): Boolean;
 begin
   Qry := TFDQuery.Create(nil);
   Qry.Connection := GetConexao;
@@ -70,6 +71,22 @@ begin
   end;
 
   Result := True;
+  Qry.Free;
+end;
+
+function TConexaoPG.DataSetToJson(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
+begin
+  Qry := TFDQuery.Create(nil);
+  Qry.Connection := GetConexao;
+
+  try
+    Qry.Open(Script, Parametros);
+
+    Result :=  TConverter.New.DataSet(Qry).AsJSONArray
+  except on E: Exception do
+    raise Exception.Create('Erro ao gravar Script.');
+  end;
+
   Qry.Free;
 end;
 
