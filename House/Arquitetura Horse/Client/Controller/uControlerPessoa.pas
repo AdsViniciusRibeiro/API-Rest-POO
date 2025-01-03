@@ -3,11 +3,10 @@ unit uControlerPessoa;
 interface
 
 uses
-  uClassePessoa;
+  uPessoa;
 
 type
   TControlePessoa = class
-  private
 
   public
     // procedimento para salvar o cliente

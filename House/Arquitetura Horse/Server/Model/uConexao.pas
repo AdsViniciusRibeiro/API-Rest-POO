@@ -82,9 +82,12 @@ begin
   try
     Qry.Open(Script, Parametros);
 
-    Result :=  TConverter.New.DataSet(Qry).AsJSONArray
+    Result :=  TConverter.New.DataSet(Qry).AsJSONArray;
   except on E: Exception do
-    raise Exception.Create('Erro ao gravar Script.');
+    begin
+      //Result := TJSONObject.Create.AddPair('Mensagem', E.Message));
+      raise Exception.Create('Erro ao gravar Script.');
+    end;
   end;
 
   Qry.Free;

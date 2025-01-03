@@ -2,15 +2,14 @@ object frmPessoa: TfrmPessoa
   Left = 0
   Top = 0
   Caption = 'Pessoa'
-  ClientHeight = 953
-  ClientWidth = 1359
+  ClientHeight = 954
+  ClientWidth = 1339
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -29
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
   Position = poMainFormCenter
   OnShow = FormShow
   PixelsPerInch = 250
@@ -18,7 +17,7 @@ object frmPessoa: TfrmPessoa
   object pnlCampos: TPanel
     Left = 0
     Top = 0
-    Width = 1359
+    Width = 1339
     Height = 265
     Margins.Left = 8
     Margins.Top = 8
@@ -55,6 +54,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Caption = 'C'#243'digo'
       Enabled = False
       TabOrder = 0
+      Text = ''
     end
     object edtDocumento: TLabeledEdit
       Left = 616
@@ -73,6 +73,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Documento'
       TabOrder = 1
+      Text = ''
     end
     object edtNome: TLabeledEdit
       Left = 81
@@ -91,6 +92,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Primeiro Nome'
       TabOrder = 2
+      Text = ''
     end
     object edtSobrenome: TLabeledEdit
       Left = 616
@@ -109,6 +111,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Sobrenome'
       TabOrder = 3
+      Text = ''
     end
     object CBTipoDocumento: TComboBox
       Left = 283
@@ -141,12 +144,13 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'CEP'
       TabOrder = 5
+      Text = ''
     end
     object BitBtn1: TBitBtn
-      Left = 832
-      Top = 32
-      Width = 75
-      Height = 25
+      Left = 1072
+      Top = 196
+      Width = 121
+      Height = 49
       Caption = 'BitBtn1'
       TabOrder = 6
       OnClick = BitBtn1Click
@@ -155,7 +159,7 @@ object frmPessoa: TfrmPessoa
   object pnlBotoes: TPanel
     Left = 0
     Top = 265
-    Width = 1359
+    Width = 1339
     Height = 88
     Margins.Left = 8
     Margins.Top = 8
@@ -232,8 +236,8 @@ object frmPessoa: TfrmPessoa
   object pnlGrid: TPanel
     Left = 0
     Top = 353
-    Width = 1359
-    Height = 600
+    Width = 1339
+    Height = 601
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
@@ -243,8 +247,8 @@ object frmPessoa: TfrmPessoa
     object dgbPessoa: TDBGrid
       Left = 1
       Top = 1
-      Width = 1357
-      Height = 598
+      Width = 1337
+      Height = 599
       Margins.Left = 8
       Margins.Top = 8
       Margins.Right = 8

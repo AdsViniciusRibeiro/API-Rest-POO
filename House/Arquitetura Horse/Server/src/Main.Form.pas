@@ -44,7 +44,6 @@ end;
 
 procedure TFrmVCL.FormCreate(Sender: TObject);
 var
-  //Qry : TFDQuery;
   JsonObj: TJSONObject;
 begin
   TConexao := TConexaoPG.Create;
@@ -63,52 +62,49 @@ begin
 
   THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorID',
     procedure(Req: THorseRequest; Res: THorseResponse)
-    var
-      QryPessoa: TFDQuery;
     begin
        Res.Send<TJSONArray>(TConexao.DataSetToJson('Select COALESCE(MAX(idpessoa), 0) + 1 MaiorID from pessoa', []));
-      {try
-        QryPessoa := TConexao.CriarQuery();
-        try
-          QryPessoa.Open('Select P.*, E.dscep ' +
-                         'from pessoa P ' +
-                         'inner join endereco E on E.idpessoa = P.idpessoa');
-          try
-            Res.Send<TJSONArray>(TConverter.New.DataSet(QryPessoa).AsJSONArray);
-          finally
-            QryPessoa.Close;
-          end;
-        finally
-          QryPessoa.Free;
-        end;
-      except on E: Exception do
-         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message))
-      end;}
     end);
 
+  THorse.Delete('datasnap/rest/TServerMethods/Pessoa/:param',
+    procedure(Req: THorseRequest; Res: THorseResponse)
+    begin
+      try
+        TConexao.ExecutarScript('Delete from pessoa where idpessoa =:ID', [Req.Params.Items['param'].ToInteger]);
+      except on E: Exception do
+         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
+      end;
+    end);
 
   THorse.Get('datasnap/rest/TServerMethods/Pessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
-    var
-      QryPessoa: TFDQuery;
     begin
       try
-        QryPessoa := TConexao.CriarQuery();
-        try
-          QryPessoa.Open('Select P.*, E.dscep ' +
-                         'from pessoa P ' +
-                         'inner join endereco E on E.idpessoa = P.idpessoa');
-          try
-            Res.Send<TJSONArray>(TConverter.New.DataSet(QryPessoa).AsJSONArray);
-          finally
-            QryPessoa.Close;
-          end;
-        finally
-          QryPessoa.Free;
-        end;
+        Res.Send<TJSONArray>(TConexao.DataSetToJson('Select P.*, E.dscep ' +
+                                                    'from pessoa P ' +
+                                                    'inner join endereco E on E.idpessoa = P.idpessoa', []));
       except on E: Exception do
-         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message))
+         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
       end;
+    end);
+
+  THorse.Put('datasnap/rest/TServerMethods/Pessoa',
+    procedure(Req: THorseRequest; Res: THorseResponse)
+    begin
+      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+
+      if JsonObj.Count > 1 then
+        TConexao.ExecutarScript('update pessoa set flnatureza =:NATUREZA , dsdocumento =:DOCUMENTO, ' +
+                                                   'nmprimeiro =:NOME, nmsegundo =:SOBRENOME, dtregistro =:DATA ' +
+                                'where idpessoa =:ID',
+                                [JsonObj.GetValue<Integer>('Natureza'),
+                                JsonObj.GetValue<string>('Documento'),
+                                JsonObj.GetValue<string>('PrimeiroNome'),
+                                JsonObj.GetValue<string>('SegundoNome'),
+                                StrToDate(JsonObj.GetValue<string>('DataRegistro')),
+                                JsonObj.GetValue<Integer>('IDPessoa')],
+                                'Erro ao alterar Pessoa.');
+      JsonObj.Free;
     end);
 
   THorse.Post('datasnap/rest/TServerMethods/Pessoa',
@@ -127,8 +123,6 @@ begin
                                 StrToDate(JsonObj.GetValue<string>('DataRegistro'))],
                                 'Erro ao inserir Pessoa.');
       JsonObj.Free;
-
-      //Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes('{"IDPessoa":1,"Natureza":1,"Documento":"123","PrimeiroNome":"Vinicius","SegundoNome":"Ribeiro","DataRegistro":"2024-12-30","CEP":"36880246"}'), 0) as TJSONObject;
     end);
 end;
 

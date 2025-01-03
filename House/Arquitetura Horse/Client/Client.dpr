@@ -3,8 +3,10 @@ program Client;
 uses
   Vcl.Forms,
   uPrincipal in 'uPrincipal.pas' {Form10},
-  uClassePessoa in 'Model\uClassePessoa.pas',
-  uControlerPessoa in 'Controller\uControlerPessoa.pas';
+  uControlerPessoa in 'Controller\uControlerPessoa.pas',
+  uPessoa in 'Model\uPessoa.pas',
+  uCEP in 'Model\uCEP.pas',
+  uControlerCEP in 'Controller\uControlerCEP.pas';
 
 {$R *.res}
 

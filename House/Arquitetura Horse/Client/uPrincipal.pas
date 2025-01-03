@@ -62,6 +62,7 @@ type
     procedure ControlaBotoes(Controle : TControleBotoes);
     function MontaURL(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod; CodPessoa : String = '') : String;
     procedure ListarTodasPessoas(sjSon : WideString);
+
   public
     { Public declarations }
   end;
@@ -72,7 +73,7 @@ var
 implementation
 
 uses
-  System.SysUtils, uClassePessoa, uControlerPessoa;
+  System.SysUtils, uPessoa, uControlerPessoa;
 
 {$R *.dfm}
 
@@ -198,12 +199,6 @@ begin
       RESTRequest.Client   := RESTClient;
       RESTRequest.Response := RESTResponse;
       RESTRequest.Method   := Metodo;
-
-      //API Key
-      {RESTRequest.Params.Add;
-      RESTRequest.Params[0].Name  := 'Quantidade';
-      RESTRequest.Params[0].Value := '3';}
-
       RESTRequest.Execute;
 
       Result     := RESTResponse.Content;

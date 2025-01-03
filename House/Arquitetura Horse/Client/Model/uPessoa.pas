@@ -1,6 +1,8 @@
-unit uClassePessoa;
+unit uPessoa;
 
 interface
+uses
+  System.JSON, IdHTTP;
 
 type
   TPessoa = class
@@ -12,6 +14,10 @@ type
     FSegundoNome : string;
     FDataRegistro : TDateTime;
     FCEP : string;
+    FURL: string;
+
+    const
+      URLBase : string = 'http://localhost:8080/datasnap/rest/TServerMethods/Pessoa';
 
     procedure SetPrimeiroNome(const Value: string);
     procedure SetCEP(const Value: string);
@@ -20,6 +26,7 @@ type
     procedure SetIDPessoa(const Value: Integer);
     procedure SetNatureza(const Value: Integer);
     procedure SetSegundoNome(const Value: string);
+    procedure SetURL(const Value: string);
 
   public
     property IDPessoa: Integer read FIDPessoa write SetIDPessoa;
@@ -29,9 +36,13 @@ type
     property SegundoNome: string read FSegundoNome write SetSegundoNome;
     property DataRegistro: TDateTime read FDataRegistro write SetDataRegistro;
     property CEP: string read FCEP write SetCEP;
+    property URL : string read FURL write SetURL;
 
     constructor Create;
+    function EnviaAPI(Metodo : string) : boolean;
     procedure Salvar(const ObjPessoa: TPessoa);
+    procedure Editar(const ObjPessoa: TPessoa);
+    procedure Deletar(const ObjPessoa: TPessoa);
 
   end;
 
@@ -86,10 +97,55 @@ begin
   FSegundoNome := Value;
 end;
 
-procedure TPessoa.Salvar(const ObjPessoa: TPessoa);//(const ObjPessoa : TPessoa);
+procedure TPessoa.SetURL(const Value: string);
+begin
+  FURL := Value;
+end;
+
+procedure TPessoa.Deletar(const ObjPessoa: TPessoa);
+begin
+
+end;
+
+procedure TPessoa.Editar(const ObjPessoa: TPessoa);
+begin
+
+end;
+
+function TPessoa.EnviaAPI(Metodo : string): boolean;
+var
+  HTTP: TIdHTTP;
+  JSON: TJSONObject;
+begin
+  // Criar um objeto HTTP
+  HTTP := TIdHTTP.Create(nil);
+  try
+    // Configurar o objeto HTTP
+    HTTP.Request.ContentType := 'application/json';
+    HTTP.HandleRedirects := True;
+
+    JSON.AddPair('IDPessoa', IDPessoa);
+    JSON.AddPair('Natureza', Natureza);
+    JSON.AddPair('Documento', Documento);
+    JSON.AddPair('PrimeiroNome', PrimeiroNome);
+    JSON.AddPair('SegundoNome', SegundoNome);
+    JSON.AddPair('DataRegistro', DataRegistro);
+
+    // Enviar a requisição POST
+    HTTP.Post('http://localhost:8080/datasnap/rest/TServerMethods/Pessoa', JSON.ToString);
+
+    // Processar a resposta (opcional)
+    // ...
+  finally
+    HTTP.Free;
+  end;
+end;
+
+procedure TPessoa.Salvar(const ObjPessoa: TPessoa);
 {var
   jsonObject: TJSONObject;}
 begin
+  EnviaAPI('Post');
   // a rotina para salvar o cliente no banco de dados deve ser escrita aqui
   {jsonObject := TJSONObject.Create;
   jsonObject.AddPair('Name', TJSONValue.CreateString(person.Name));
