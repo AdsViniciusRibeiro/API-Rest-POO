@@ -2,7 +2,7 @@ unit uPessoa;
 
 interface
 uses
-  System.JSON, IdHTTP;
+  System.JSON, IdHTTP, System.SysUtils;
 
 type
   TPessoa = class
@@ -39,6 +39,7 @@ type
     property URL : string read FURL write SetURL;
 
     constructor Create;
+    destructor Destroy;
     function EnviaAPI(Metodo : string) : boolean;
     procedure Salvar(const ObjPessoa: TPessoa);
     procedure Editar(const ObjPessoa: TPessoa);
@@ -107,6 +108,11 @@ begin
 
 end;
 
+destructor TPessoa.Destroy;
+begin
+  Self.Free;
+end;
+
 procedure TPessoa.Editar(const ObjPessoa: TPessoa);
 begin
 
@@ -124,12 +130,12 @@ begin
     HTTP.Request.ContentType := 'application/json';
     HTTP.HandleRedirects := True;
 
-    JSON.AddPair('IDPessoa', IDPessoa);
-    JSON.AddPair('Natureza', Natureza);
+    JSON.AddPair('IDPessoa', IntToStr(IDPessoa));
+    JSON.AddPair('Natureza', IntToStr(Natureza));
     JSON.AddPair('Documento', Documento);
     JSON.AddPair('PrimeiroNome', PrimeiroNome);
     JSON.AddPair('SegundoNome', SegundoNome);
-    JSON.AddPair('DataRegistro', DataRegistro);
+    JSON.AddPair('DataRegistro', DateToStr(DataRegistro));
 
     // Enviar a requisição POST
     HTTP.Post('http://localhost:8080/datasnap/rest/TServerMethods/Pessoa', JSON.ToString);

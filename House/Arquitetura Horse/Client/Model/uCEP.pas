@@ -1,8 +1,11 @@
 unit uCEP;
 
 interface
+uses
+  uPessoa;
+
 type
-  TCEP = class
+  TCEP = class(TPessoa)
     private
     FIDEndereco: integer;
     FCEP: integer;
@@ -18,6 +21,7 @@ type
       property CEP : integer read FCEP write SetCEP;
 
       constructor Create;
+      destructor Destroy;
   end;
 
 implementation
@@ -27,6 +31,11 @@ implementation
 constructor TCEP.Create;
 begin
 
+end;
+
+destructor TCEP.Destroy;
+begin
+  Self.Free;
 end;
 
 procedure TCEP.SetCEP(const Value: integer);

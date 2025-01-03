@@ -63,7 +63,7 @@ begin
   THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorID',
     procedure(Req: THorseRequest; Res: THorseResponse)
     begin
-       Res.Send<TJSONArray>(TConexao.DataSetToJson('Select COALESCE(MAX(idpessoa), 0) + 1 MaiorID from pessoa', []));
+       Res.Send<TJSONObject>(TConexao.DataSetToJson('Select COALESCE(MAX(idpessoa), 0) + 1 MaiorID from pessoa', []));
     end);
 
   THorse.Delete('datasnap/rest/TServerMethods/Pessoa/:param',
