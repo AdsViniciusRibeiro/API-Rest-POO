@@ -134,6 +134,7 @@
         <DCCReference Include="src\uPessoa.pas"/>
         <DCCReference Include="Model\uConexao.pas"/>
         <DCCReference Include="Model\uConveterDataSet.pas"/>
+        <DCCReference Include="..\Client\Controller\uControlerEndereco.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -163,6 +164,12 @@
             </Delphi.Personality>
             <Deployment Version="4">
                 <DeployFile LocalName="Server.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="Server.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>Server.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\VCL.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">

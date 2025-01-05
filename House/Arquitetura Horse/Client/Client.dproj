@@ -105,10 +105,15 @@
             <Form>Form10</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="Controller\uControlerPessoa.pas"/>
         <DCCReference Include="Model\uPessoa.pas"/>
-        <DCCReference Include="Model\uCEP.pas"/>
-        <DCCReference Include="Controller\uControlerCEP.pas"/>
+        <DCCReference Include="Model\uClasseAPI.pas"/>
+        <DCCReference Include="Model\uClasseCEP.pas"/>
+        <DCCReference Include="Model\uClasseEndereco.pas"/>
+        <DCCReference Include="Controller\uControleCEP.pas"/>
+        <DCCReference Include="Controller\uControlePessoa.pas"/>
+        <DCCReference Include="Controller\uControleEndereco.pas"/>
+        <DCCReference Include="Model\uClasseThreadEndereco.pas"/>
+        <None Include="ModelSupport_Client\default.txaPackage"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -140,6 +145,12 @@
                 <DeployFile LocalName="Client.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>Client.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="ModelSupport_Client\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -971,6 +982,7 @@
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
             </Platforms>
+            <ModelSupport>True</ModelSupport>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>

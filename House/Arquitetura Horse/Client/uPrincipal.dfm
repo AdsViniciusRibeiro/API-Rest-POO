@@ -25,6 +25,7 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 1319
     object Label1: TLabel
       Left = 283
       Top = 48
@@ -72,7 +73,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Right = 8
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Documento'
-      TabOrder = 1
+      TabOrder = 2
       Text = ''
     end
     object edtNome: TLabeledEdit
@@ -91,12 +92,12 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Right = 8
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Primeiro Nome'
-      TabOrder = 2
+      TabOrder = 4
       Text = ''
     end
     object edtSobrenome: TLabeledEdit
       Left = 616
-      Top = 202
+      Top = 206
       Width = 417
       Height = 43
       Margins.Left = 8
@@ -110,7 +111,7 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Right = 8
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Sobrenome'
-      TabOrder = 3
+      TabOrder = 5
       Text = ''
     end
     object CBTipoDocumento: TComboBox
@@ -122,7 +123,7 @@ object frmPessoa: TfrmPessoa
       Margins.Top = 8
       Margins.Right = 8
       Margins.Bottom = 8
-      TabOrder = 4
+      TabOrder = 1
       Items.Strings = (
         '1- CPF'
         '2 - Identidade')
@@ -143,17 +144,8 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Right = 8
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'CEP'
-      TabOrder = 5
+      TabOrder = 3
       Text = ''
-    end
-    object BitBtn1: TBitBtn
-      Left = 1072
-      Top = 196
-      Width = 121
-      Height = 49
-      Caption = 'BitBtn1'
-      TabOrder = 6
-      OnClick = BitBtn1Click
     end
   end
   object pnlBotoes: TPanel
@@ -167,9 +159,10 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1319
     object btnNovaPessoa: TBitBtn
       Left = 144
-      Top = 16
+      Top = 22
       Width = 200
       Height = 50
       Margins.Left = 8
@@ -182,7 +175,7 @@ object frmPessoa: TfrmPessoa
     end
     object btnEditarPessoa: TBitBtn
       Left = 360
-      Top = 20
+      Top = 22
       Width = 200
       Height = 50
       Margins.Left = 8
@@ -195,7 +188,7 @@ object frmPessoa: TfrmPessoa
     end
     object btnGravarPessoa: TBitBtn
       Left = 792
-      Top = 20
+      Top = 22
       Width = 200
       Height = 50
       Margins.Left = 8
@@ -244,6 +237,8 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alClient
     TabOrder = 2
+    ExplicitWidth = 1319
+    ExplicitHeight = 602
     object dgbPessoa: TDBGrid
       Left = 1
       Top = 1

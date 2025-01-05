@@ -15,11 +15,7 @@ uses
 type
   TPesquisa = (pTodos, pPorID, pMaiorIDPessoa, pMaiorIDEndereco, pInsert);
   TControleBotoes = (cInicial, cInsersao, cEdicao);
-
-  TPerson = record
-    Name: string;
-    Age: Integer;
-  end;
+  TCrud = (cInsert, cEditar, cExcluir);
 
   TfrmPessoa = class(TForm)
     pnlCampos: TPanel;
@@ -47,7 +43,6 @@ type
     MTBPessoadtregistro: TDateField;
     MTBPessoadscep: TStringField;
     edtCEP: TLabeledEdit;
-    BitBtn1: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure btnGravarPessoaClick(Sender: TObject);
     procedure btnCancelarPessoaClick(Sender: TObject);
@@ -55,13 +50,16 @@ type
     procedure btnEditarPessoaClick(Sender: TObject);
     procedure btnExcluirPessoaClick(Sender: TObject);
     procedure dgbPessoaCellClick(Column: TColumn);
-    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
     function APIJson(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod) : WideString;
     procedure ControlaBotoes(Controle : TControleBotoes);
     function MontaURL(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod; CodPessoa : String = '') : String;
     procedure ListarTodasPessoas(sjSon : WideString);
+    procedure CRUD;
+
+    var
+      AcaoCrud : TCrud;
 
   public
     { Public declarations }
@@ -73,7 +71,8 @@ var
 implementation
 
 uses
-  System.SysUtils, uPessoa, uControlerPessoa;
+  System.SysUtils, uPessoa, uControlePessoa, uClasseCEP, uControleCEP,
+  uClasseThreadEndereco;
 
 {$R *.dfm}
 
@@ -122,17 +121,23 @@ begin
   case Controle of
     cInicial: begin
                 btnNovaPessoa.Enabled     := True;
-                btnEditarPessoa.Enabled   := False;
+                btnEditarPessoa.Enabled   := True;
                 btnExcluirPessoa.Enabled  := True;
                 btnGravarPessoa.Enabled   := False;
                 btnCancelarPessoa.Enabled := False;
                 dgbPessoa.Enabled         := True;
 
-                edtCodigo.Clear;
+                edtDocumento.Enabled    := False;
+                edtNome.Enabled         := False;
+                edtSobrenome.Enabled    := False;
+                edtCEP.Enabled          := False;
+                CBTipoDocumento.Enabled := False;
+
                 edtCodigo.Clear;
                 edtDocumento.Clear;
                 edtNome.Clear;
                 edtSobrenome.Clear;
+                edtCEP.Clear;
                 CBTipoDocumento.ItemIndex := -1;
               end;
 
@@ -144,11 +149,17 @@ begin
                 btnCancelarPessoa.Enabled := True;
                 dgbPessoa.Enabled         := False;
 
-                edtCodigo.Clear;
+                edtDocumento.Enabled    := True;
+                edtNome.Enabled         := True;
+                edtSobrenome.Enabled    := True;
+                edtCEP.Enabled          := True;
+                CBTipoDocumento.Enabled := True;
+
                 edtCodigo.Clear;
                 edtDocumento.Clear;
                 edtNome.Clear;
                 edtSobrenome.Clear;
+                edtCEP.Clear;
                 CBTipoDocumento.ItemIndex := -1;
               end;
 
@@ -159,8 +170,59 @@ begin
                btnGravarPessoa.Enabled   := True;
                btnCancelarPessoa.Enabled := True;
                dgbPessoa.Enabled         := False;
+
+               edtDocumento.Enabled     := True;
+               edtNome.Enabled          := True;
+               edtSobrenome.Enabled     := True;
+               edtCEP.Enabled           := True;
+               CBTipoDocumento.Enabled  := True;
              end;
   end;
+end;
+
+procedure TfrmPessoa.CRUD;
+var
+  objPessoa: TPessoa;
+  ObjCEP : TCEP;
+  objControlePessoa: TControlePessoa;
+  ObjControleCEP : TControleCEP;
+  ObjThreadEndereco : TThreadEndereco;
+begin
+  objPessoa         := TPessoa.Create;
+  //ObjCEP            := TCEP.Create;
+  objControlePessoa := TControlePessoa.Create;
+  //ObjControleCEP    := TControleCEP.Create;
+  ObjThreadEndereco := TThreadEndereco.Create;
+
+  try
+    objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
+    objPessoa.Natureza     := StrToInt(LeftStr(CBTipoDocumento.Text, 1));
+    objPessoa.Documento    := edtDocumento.Text;
+    objPessoa.PrimeiroNome := edtNome.Text;
+    objPessoa.SegundoNome  := edtSobrenome.Text;
+    objPessoa.DataRegistro := Date;
+
+    {ObjCEP.IDPessoa  := objPessoa.IDPessoa;
+    ObjCEP.CEP       := edtCEP.Text; }
+
+    case AcaoCrud of
+      cInsert: begin
+                  objControlePessoa.Salvar(objPessoa);
+                  ObjThreadEndereco.Start;
+                  //ObjControleCEP.Salvar(ObjCEP);
+               end;
+      cEditar: objControlePessoa.Editar(objPessoa);
+      cExcluir: objControlePessoa.Excluir(objPessoa);
+    end;
+
+  finally
+    FreeAndNil(objPessoa);
+    //FreeAndNil(ObjCEP);
+    FreeAndNil(objControlePessoa);
+    //FreeAndNil(ObjControleCEP)
+  end;
+
+  ControlaBotoes(cInicial);
 end;
 
 procedure TfrmPessoa.dgbPessoaCellClick(Column: TColumn);
@@ -215,36 +277,6 @@ begin
   end;
 end;
 
-procedure TfrmPessoa.BitBtn1Click(Sender: TObject);
-var
-  HTTP: TIdHTTP;
-  JSON: TJSONObject;
-  Person: TPerson;
-begin
-  // Criar um objeto HTTP
-  HTTP := TIdHTTP.Create(nil);
-  try
-    // Configurar o objeto HTTP
-    HTTP.Request.ContentType := 'application/json';
-    HTTP.HandleRedirects := True;
-
-    // Criar um objeto JSON com os dados
-    JSON := TJSONObject.Create;
-    Person.Name := 'João Silva';
-    Person.Age := 30;
-    JSON.AddPair('Name', Person.Name);
-    JSON.AddPair('Age', IntToStr(Person.Age));
-
-    // Enviar a requisição POST
-    HTTP.Post('http://localhost:8080/datasnap/rest/TServerMethods/InsertPessoa', JSON.ToString);
-
-    // Processar a resposta (opcional)
-    // ...
-  finally
-    HTTP.Free;
-  end;
-end;
-
 procedure TfrmPessoa.btnCancelarPessoaClick(Sender: TObject);
 begin
   ControlaBotoes(cInicial);
@@ -253,40 +285,18 @@ end;
 procedure TfrmPessoa.btnEditarPessoaClick(Sender: TObject);
 begin
   ControlaBotoes(cEdicao);
+  AcaoCrud := cEditar;
 end;
 
 procedure TfrmPessoa.btnExcluirPessoaClick(Sender: TObject);
 begin
-  ControlaBotoes(cInicial);
+  AcaoCrud := cExcluir;
+  CRUD;
 end;
 
 procedure TfrmPessoa.btnGravarPessoaClick(Sender: TObject);
-var
-  objPessoa: TPessoa;
-  objControle: TControlePessoa;
 begin
-  // instanciação dos objetos
-  objPessoa  := TPessoa.Create; // classe Modelo
-  objControle := TControlePessoa.Create; // classe Controle
-  try
-    // preenchimento dos dados
-    objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
-    objPessoa.Natureza     := StrToInt(LeftStr(CBTipoDocumento.Text, 1));
-    objPessoa.Documento    := edtDocumento.Text;
-    objPessoa.PrimeiroNome := edtNome.Text;
-    objPessoa.SegundoNome  := edtSobrenome.Text;
-    objPessoa.DataRegistro := Date;
-    objPessoa.CEP          := edtCEP.Text;
-
-    // chamada da rotina para gravação
-    objControle.Salvar(objPessoa);
-  finally
-    // liberação dos objetos da memória
-    FreeAndNil(objPessoa);
-    FreeAndNil(objControle);
-  end;
-
-  ControlaBotoes(cInicial);
+  CRUD;
 end;
 
 procedure TfrmPessoa.btnNovaPessoaClick(Sender: TObject);
@@ -295,12 +305,13 @@ var
   sJson : WideString;
 begin
   sJson := APIJson(pMaiorIDPessoa, rmGET);
-  //sJson := Copy(sJson, 2, Length(sJson) - 2);
   JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sjSon), 0) as TJSONObject;
 
   ControlaBotoes(cInsersao);
   edtCodigo.Text := JsonObj.GetValue<string>('maiorid');
   CBTipoDocumento.SetFocus;
+
+  AcaoCrud := cInsert;
 end;
 
 procedure TfrmPessoa.FormShow(Sender: TObject);

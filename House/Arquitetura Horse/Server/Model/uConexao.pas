@@ -19,7 +19,8 @@ type
     function GetConexao: TFDConnection;
     function CriarQuery: TFDQuery;
     function ExecutarScript(Script : string; Parametros : array of Variant; MsgErro : string = 'Erro ao gravar Script.') : Boolean;
-    function DataSetToJson(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
+    function DataSetToJsonArray(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
+    function DataSetToJsonObject(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONObject;
   end;
 implementation
 { TConexao }
@@ -66,15 +67,16 @@ begin
   Result := False;
   try
     Qry.ExecSQL(Script, Parametros);
+    //insert into endereco (idpessoa, dscep) values (3, '36880243')
   except on E: Exception do
-    raise Exception.Create('Erro ao gravar Script.');
+    raise Exception.Create(MsgErro);
   end;
 
   Result := True;
   Qry.Free;
 end;
 
-function TConexaoPG.DataSetToJson(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
+function TConexaoPG.DataSetToJsonArray(Script: string; Parametros: array of Variant; MsgErro : string = 'Erro ao gravar Script.'): TJSONArray;
 begin
   Qry := TFDQuery.Create(nil);
   Qry.Connection := GetConexao;
@@ -84,10 +86,23 @@ begin
 
     Result :=  TConverter.New.DataSet(Qry).AsJSONArray;
   except on E: Exception do
-    begin
-      //Result := TJSONObject.Create.AddPair('Mensagem', E.Message));
-      raise Exception.Create('Erro ao gravar Script.');
-    end;
+    Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(TJSONObject.Create.AddPair('Mensagem', E.Message).ToString), 0) as TJSONArray;
+  end;
+
+  Qry.Free;
+end;
+
+function TConexaoPG.DataSetToJsonObject(Script: string; Parametros: array of Variant; MsgErro: string): TJSONObject;
+begin
+  Qry := TFDQuery.Create(nil);
+  Qry.Connection := GetConexao;
+
+  try
+    Qry.Open(Script, Parametros);
+
+    Result :=  TConverter.New.DataSet(Qry).AsJSONObject;
+  except on E: Exception do
+      Result := TJSONObject.Create.AddPair('Mensagem', E.Message);
   end;
 
   Qry.Free;

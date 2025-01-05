@@ -3,10 +3,14 @@ program Client;
 uses
   Vcl.Forms,
   uPrincipal in 'uPrincipal.pas' {Form10},
-  uControlerPessoa in 'Controller\uControlerPessoa.pas',
   uPessoa in 'Model\uPessoa.pas',
-  uCEP in 'Model\uCEP.pas',
-  uControlerCEP in 'Controller\uControlerCEP.pas';
+  uClasseAPI in 'Model\uClasseAPI.pas',
+  uClasseCEP in 'Model\uClasseCEP.pas',
+  uClasseEndereco in 'Model\uClasseEndereco.pas',
+  uControleCEP in 'Controller\uControleCEP.pas',
+  uControlePessoa in 'Controller\uControlePessoa.pas',
+  uControleEndereco in 'Controller\uControleEndereco.pas',
+  uClasseThreadEndereco in 'Model\uClasseThreadEndereco.pas';
 
 {$R *.res}
 
