@@ -12,6 +12,7 @@ type
 
     procedure SetIDEndereco(const Value: integer);
     procedure SetCEP(const Value: string);
+    function GerarID : integer;
 
     const
       URLCEP    = 'http://localhost:8080/datasnap/rest/TServerMethods/CEP';
@@ -39,9 +40,29 @@ implementation
 
 uses uClasseAPI;
 
+function TCEP.GerarID : integer;
+var
+  API : TAPI;
+  JsonObj : TJSONObject;
+begin
+  API := TAPI.Create;
+  API.ConfigurarRestClient('http://localhost:8080/datasnap/rest/TServerMethods/RetornaMaiorIDCEP');
+  API.ConfigurarRestRequest(rmGET);
+  API.ConfigurarRestResponse('application/json');
+  API.ExecutarAPI;
+
+  JsonObj := TJSONObject.Create;
+  JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(API.JsonRetorno), 0) as TJSONObject;
+
+  Result := JsonObj.GetValue<Integer>('maiorid');
+
+  JsonObj.Free;
+  API.Free;
+end;
+
 constructor TCEP.Create;
 begin
-
+   IDEndereco := GerarID;
 end;
 
 procedure TCEP.Deletar(const ObjCEP: TCEP);
@@ -64,6 +85,7 @@ var
   JSON: TJSONObject;
 begin
   JSON := TJSONObject.Create;
+  JSON.AddPair('IDEndereco', IntToStr(IDEndereco));
   JSON.AddPair('IDPessoa', IntToStr(IDPessoa));
   JSON.AddPair('CEP', CEP);
 

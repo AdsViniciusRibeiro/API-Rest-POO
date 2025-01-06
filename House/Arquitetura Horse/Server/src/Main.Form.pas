@@ -60,7 +60,7 @@ begin
       Res.Send(ReverseString(Req.Params.Items['param']));
     end);
 
-  THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorID',
+  THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDPessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
     begin
        Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select COALESCE(MAX(idpessoa), 0) + 1 MaiorID from pessoa', []));
@@ -126,6 +126,16 @@ begin
     end);
 
     //CEP
+    THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDCEP',
+    procedure(Req: THorseRequest; Res: THorseResponse)
+    begin
+      try
+        Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select COALESCE(MAX(IDEndereco), 0) + 1 MaiorID from endereco', []));
+      except on E: Exception do
+         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
+      end;
+    end);
+
     THorse.Get('datasnap/rest/TServerMethods/CEP/:IDEndereco/:IDPessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
     begin
@@ -156,12 +166,12 @@ begin
       JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
 
       if JsonObj.Count > 1 then
-        if TConexao.ExecutarScript('insert into endereco (idpessoa, dscep) values ' +
-                                '(:IDPESSOA, :CEP)',
-                                [//JsonObj.GetValue<Integer>('IDEndereco'),
-                                 JsonObj.GetValue<Integer>('IDPessoa'),
-                                 JsonObj.GetValue<Integer>('CEP')],
-                                'Erro ao inserir CEP.') then
+        if TConexao.ExecutarScript('insert into endereco (idendereco, idpessoa, dscep) values ' +
+                                  '(:IDENREDECO, :IDPESSOA, :CEP)',
+                                   [JsonObj.GetValue<Integer>('IDEndereco'),
+                                    JsonObj.GetValue<Integer>('IDPessoa'),
+                                    JsonObj.GetValue<Integer>('CEP')],
+                                    'Erro ao inserir CEP.') then
         begin
           //Res.Send<TJSONObject>(JsonObj).Status(THTTPStatus.Created);
         end;

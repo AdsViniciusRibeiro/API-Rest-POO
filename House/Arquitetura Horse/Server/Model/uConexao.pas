@@ -67,12 +67,10 @@ begin
   Result := False;
   try
     Qry.ExecSQL(Script, Parametros);
-    //insert into endereco (idpessoa, dscep) values (3, '36880243')
   except on E: Exception do
     raise Exception.Create(MsgErro);
   end;
 
-  Qry.LastCommand.Records.FieldByName('SCOPE_IDENTITY()').AsInteger;
   Result := True;
   Qry.Free;
 end;

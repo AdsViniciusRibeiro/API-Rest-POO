@@ -104,7 +104,7 @@ begin
  case TipoRetorno of
    pTodos: CompletaURL := CompletaURL + 'Pessoa';
    pPorID: ;
-   pMaiorIDPessoa: CompletaURL := CompletaURL + 'RetornaMaiorID';
+   pMaiorIDPessoa: CompletaURL := CompletaURL + 'RetornaMaiorIDPessoa';
    pMaiorIDEndereco: ;
    pInsert: CompletaURL := CompletaURL + 'acceptInsertPessoa';
  end;
@@ -194,10 +194,10 @@ var
 begin
   try
     objPessoa         := TPessoa.Create;
-    ObjCEP            := TCEP.Create;
+    //ObjCEP            := TCEP.Create;
     objControlePessoa := TControlePessoa.Create;
-    ObjControleCEP    := TControleCEP.Create;
-    //ObjThreadEndereco := TThreadEndereco.Create;
+    //ObjControleCEP    := TControleCEP.Create;
+    ObjThreadEndereco := TThreadEndereco.Create;
 
     try
       objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
@@ -207,14 +207,15 @@ begin
       objPessoa.SegundoNome  := edtSobrenome.Text;
       objPessoa.DataRegistro := Date;
 
-      ObjCEP.IDPessoa  := objPessoa.IDPessoa;
-      ObjCEP.CEP       := edtCEP.Text;
+      {ObjCEP.IDPessoa  := objPessoa.IDPessoa;
+      ObjCEP.CEP       := edtCEP.Text;}
 
       case AcaoCrud of
         cInsert: begin
                     objControlePessoa.Salvar(objPessoa);
-                    //ObjThreadEndereco.Start;
-                    ObjControleCEP.Salvar(ObjCEP);
+
+                    ObjThreadEndereco.Start;
+                    //ObjControleCEP.Salvar(ObjCEP);
                  end;
         cEditar: objControlePessoa.Editar(objPessoa);
         cExcluir: objControlePessoa.Excluir(objPessoa);
@@ -222,10 +223,10 @@ begin
 
     finally
       FreeAndNil(objPessoa);
-      FreeAndNil(ObjCEP);
+      //FreeAndNil(ObjCEP);
       FreeAndNil(objControlePessoa);
-      //FreeAndNil(ObjThreadEndereco);
-      FreeAndNil(ObjControleCEP)
+      FreeAndNil(ObjThreadEndereco);
+      //FreeAndNil(ObjControleCEP)
     end;
   except on E: Exception do
     begin

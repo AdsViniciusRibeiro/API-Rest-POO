@@ -66,7 +66,7 @@ begin
   ObjControleCEP      := TControleCEP.Create;
   objControleEndereco := TControleEndereco.Create;
 
-  FreeOnTerminate := True; // Libera a thread automaticamente quando terminar
+  //FreeOnTerminate := True; // Libera a thread automaticamente quando terminar
 end;
 
 {constructor TThreadEndereco.Create(CreateSuspended: Boolean);
@@ -89,10 +89,10 @@ begin
       begin
         ObjCEP.IDPessoa := StrToInt(frmPessoa.edtCodigo.Text);
         ObjCEP.CEP      := frmPessoa.edtCEP.Text;
-        //CargaEndereco;
+        CargaEndereco;
 
         ObjControleCEP.Salvar(ObjCEP);
-        //objControleEndereco.Salvar(ObjEndereco);
+        objControleEndereco.Salvar(ObjEndereco);
       end
     );
 
