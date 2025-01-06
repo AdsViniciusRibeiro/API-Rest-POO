@@ -24,10 +24,10 @@ function TControleCEP.CEPValido(const ObjCEP : TCEP): boolean;
 var
   API : TAPI;
   JsonObj : TJSONObject;
+  url : string;
 begin
   API := TAPI.Create;
-
-  API.ConfigurarRestClient(Format('http://viacep.com.br/ws/%s/json/', [ObjCEP.CEP]));
+  API.ConfigurarRestClient('viacep.com.br/ws/' + ObjCEP.CEP + '/json/);
   API.ConfigurarRestRequest(rmGET);
   API.ConfigurarRestResponse('application/json');
   API.ExecutarAPI;

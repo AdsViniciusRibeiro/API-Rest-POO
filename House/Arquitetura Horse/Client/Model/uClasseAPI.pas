@@ -82,7 +82,7 @@ begin
   case FRESTRequest.Method of
     rmPOST, rmPUT: begin
                      FRESTRequest.Params.Add;
-                     FRESTRequest.Params[0].ContentType := 'application/json';
+                     FRESTRequest.Params[0].ContentType := ctAPPLICATION_JSON; //:= 'application/json';
                      FRESTRequest.Params[0].Kind        := pkREQUESTBODY;
                      FRESTRequest.Params[0].Name        := 'Json';
                      FRESTRequest.Params[0].Value       := ValorEnvio;

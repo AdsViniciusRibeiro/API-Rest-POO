@@ -43,6 +43,10 @@ type
     MTBPessoadtregistro: TDateField;
     MTBPessoadscep: TStringField;
     edtCEP: TLabeledEdit;
+    RESTRequest1: TRESTRequest;
+    RESTClient1: TRESTClient;
+    RESTRequest2: TRESTRequest;
+    RESTResponse1: TRESTResponse;
     procedure FormShow(Sender: TObject);
     procedure btnGravarPessoaClick(Sender: TObject);
     procedure btnCancelarPessoaClick(Sender: TObject);
@@ -188,38 +192,48 @@ var
   ObjControleCEP : TControleCEP;
   ObjThreadEndereco : TThreadEndereco;
 begin
-  objPessoa         := TPessoa.Create;
-  //ObjCEP            := TCEP.Create;
-  objControlePessoa := TControlePessoa.Create;
-  //ObjControleCEP    := TControleCEP.Create;
-  ObjThreadEndereco := TThreadEndereco.Create;
-
   try
-    objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
-    objPessoa.Natureza     := StrToInt(LeftStr(CBTipoDocumento.Text, 1));
-    objPessoa.Documento    := edtDocumento.Text;
-    objPessoa.PrimeiroNome := edtNome.Text;
-    objPessoa.SegundoNome  := edtSobrenome.Text;
-    objPessoa.DataRegistro := Date;
+    objPessoa         := TPessoa.Create;
+    ObjCEP            := TCEP.Create;
+    objControlePessoa := TControlePessoa.Create;
+    ObjControleCEP    := TControleCEP.Create;
+    //ObjThreadEndereco := TThreadEndereco.Create;
 
-    {ObjCEP.IDPessoa  := objPessoa.IDPessoa;
-    ObjCEP.CEP       := edtCEP.Text; }
+    try
+      objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
+      objPessoa.Natureza     := StrToInt(LeftStr(CBTipoDocumento.Text, 1));
+      objPessoa.Documento    := edtDocumento.Text;
+      objPessoa.PrimeiroNome := edtNome.Text;
+      objPessoa.SegundoNome  := edtSobrenome.Text;
+      objPessoa.DataRegistro := Date;
 
-    case AcaoCrud of
-      cInsert: begin
-                  objControlePessoa.Salvar(objPessoa);
-                  ObjThreadEndereco.Start;
-                  //ObjControleCEP.Salvar(ObjCEP);
-               end;
-      cEditar: objControlePessoa.Editar(objPessoa);
-      cExcluir: objControlePessoa.Excluir(objPessoa);
+      ObjCEP.IDPessoa  := objPessoa.IDPessoa;
+      ObjCEP.CEP       := edtCEP.Text;
+
+      case AcaoCrud of
+        cInsert: begin
+                    objControlePessoa.Salvar(objPessoa);
+                    //ObjThreadEndereco.Start;
+                    ObjControleCEP.Salvar(ObjCEP);
+                 end;
+        cEditar: objControlePessoa.Editar(objPessoa);
+        cExcluir: objControlePessoa.Excluir(objPessoa);
+      end;
+
+    finally
+      FreeAndNil(objPessoa);
+      FreeAndNil(ObjCEP);
+      FreeAndNil(objControlePessoa);
+      //FreeAndNil(ObjThreadEndereco);
+      FreeAndNil(ObjControleCEP)
     end;
-
-  finally
-    FreeAndNil(objPessoa);
-    //FreeAndNil(ObjCEP);
-    FreeAndNil(objControlePessoa);
-    //FreeAndNil(ObjControleCEP)
+  except on E: Exception do
+    begin
+      FreeAndNil(objPessoa);
+      //FreeAndNil(ObjCEP);
+      FreeAndNil(objControlePessoa);
+      FreeAndNil(ObjThreadEndereco);
+    end;
   end;
 
   ControlaBotoes(cInicial);

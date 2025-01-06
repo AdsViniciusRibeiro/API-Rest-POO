@@ -20,13 +20,11 @@ type
     procedure CargaEndereco;
   public
     constructor Create;
+    //constructor Create(CreateSuspended: Boolean); overload;
     destructor Destroy;
   end;
 
 implementation
-
-//uses uPrincipal, uControleEndereco, uClasseEndereco, uClasseCEP, uControleCEP;
-
 
 uses uClasseAPI;
 
@@ -34,10 +32,11 @@ procedure TThreadEndereco.CargaEndereco;
 var
   API : TAPI;
   JsonObj : TJSONObject;
+  url : string;
 begin
   API := TAPI.Create;
-
-  API.ConfigurarRestClient(Format('http://viacep.com.br/ws/%s/json/', [ObjCEP.CEP]));
+  url := 'viacep.com.br/ws/' + ObjCEP.CEP + '/json/';
+  API.ConfigurarRestClient(Format('viacep.com.br/ws/%s/json/', [ObjCEP.CEP]));
   API.ConfigurarRestRequest(rmGET);
   API.ConfigurarRestResponse('application/json');
   API.ExecutarAPI;
@@ -61,7 +60,7 @@ end;
 
 constructor TThreadEndereco.Create;
 begin
-  inherited;
+  inherited Create(False);
   ObjCEP              := TCEP.Create;
   ObjEndereco         := TEndereco.Create;
   ObjControleCEP      := TControleCEP.Create;
@@ -69,6 +68,11 @@ begin
 
   FreeOnTerminate := True; // Libera a thread automaticamente quando terminar
 end;
+
+{constructor TThreadEndereco.Create(CreateSuspended: Boolean);
+begin
+  CreateSuspended := False;
+end;}
 
 destructor TThreadEndereco.Destroy;
 begin
@@ -83,12 +87,12 @@ begin
   Synchronize(
       procedure
       begin
-        ObjCEP.IDPessoa  := StrToInt(frmPessoa.edtCodigo.Text);
-        ObjCEP.CEP       := frmPessoa.edtCEP.Text;
-        CargaEndereco;
+        ObjCEP.IDPessoa := StrToInt(frmPessoa.edtCodigo.Text);
+        ObjCEP.CEP      := frmPessoa.edtCEP.Text;
+        //CargaEndereco;
 
         ObjControleCEP.Salvar(ObjCEP);
-        objControleEndereco.Salvar(ObjEndereco);
+        //objControleEndereco.Salvar(ObjEndereco);
       end
     );
 

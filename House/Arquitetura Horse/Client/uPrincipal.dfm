@@ -10,6 +10,7 @@ object frmPessoa: TfrmPessoa
   Font.Height = -29
   Font.Name = 'Tahoma'
   Font.Style = []
+  OldCreateOrder = True
   Position = poMainFormCenter
   OnShow = FormShow
   PixelsPerInch = 250
@@ -25,7 +26,6 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 1319
     object Label1: TLabel
       Left = 283
       Top = 48
@@ -55,7 +55,6 @@ object frmPessoa: TfrmPessoa
       EditLabel.Caption = 'C'#243'digo'
       Enabled = False
       TabOrder = 0
-      Text = ''
     end
     object edtDocumento: TLabeledEdit
       Left = 616
@@ -74,7 +73,6 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Documento'
       TabOrder = 2
-      Text = ''
     end
     object edtNome: TLabeledEdit
       Left = 81
@@ -93,7 +91,6 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Primeiro Nome'
       TabOrder = 4
-      Text = ''
     end
     object edtSobrenome: TLabeledEdit
       Left = 616
@@ -112,7 +109,6 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'Sobrenome'
       TabOrder = 5
-      Text = ''
     end
     object CBTipoDocumento: TComboBox
       Left = 283
@@ -145,7 +141,6 @@ object frmPessoa: TfrmPessoa
       EditLabel.Margins.Bottom = 8
       EditLabel.Caption = 'CEP'
       TabOrder = 3
-      Text = ''
     end
   end
   object pnlBotoes: TPanel
@@ -159,7 +154,6 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1319
     object btnNovaPessoa: TBitBtn
       Left = 144
       Top = 22
@@ -237,8 +231,6 @@ object frmPessoa: TfrmPessoa
     Margins.Bottom = 8
     Align = alClient
     TabOrder = 2
-    ExplicitWidth = 1319
-    ExplicitHeight = 602
     object dgbPessoa: TDBGrid
       Left = 1
       Top = 1
@@ -297,5 +289,38 @@ object frmPessoa: TfrmPessoa
     DataSet = MTBPessoa
     Left = 353
     Top = 461
+  end
+  object RESTRequest1: TRESTRequest
+    Client = RESTClient1
+    Params = <
+      item
+        ContentType = ctAPPLICATION_JSON
+      end>
+    Response = RESTResponse1
+    SynchronizedEvents = False
+    Left = 672
+    Top = 481
+  end
+  object RESTClient1: TRESTClient
+    Accept = 'application/json, text/plain; q=0.9, text/html;q=0.8,'
+    AcceptCharset = 'utf-8, *;q=0.8'
+    BaseURL = 'https://viacep.com.br/ws/36880246/json/'
+    Params = <>
+    RaiseExceptionOn500 = False
+    Left = 72
+    Top = 432
+  end
+  object RESTRequest2: TRESTRequest
+    Client = RESTClient1
+    Params = <>
+    Response = RESTResponse1
+    SynchronizedEvents = False
+    Left = 152
+    Top = 432
+  end
+  object RESTResponse1: TRESTResponse
+    ContentType = 'application/json'
+    Left = 248
+    Top = 440
   end
 end

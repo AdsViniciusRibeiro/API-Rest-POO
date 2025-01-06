@@ -163,7 +163,7 @@ begin
                                  JsonObj.GetValue<Integer>('CEP')],
                                 'Erro ao inserir CEP.') then
         begin
-          Res.Send<TJSONObject>(JsonObj).Status(THTTPStatus.Created);
+          //Res.Send<TJSONObject>(JsonObj).Status(THTTPStatus.Created);
         end;
       JsonObj.Free;
     end);

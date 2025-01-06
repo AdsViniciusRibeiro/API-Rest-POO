@@ -6,8 +6,7 @@ uses
   uEndereco in 'src\uEndereco.pas',
   uPessoa in 'src\uPessoa.pas',
   uConexao in 'Model\uConexao.pas',
-  uConveterDataSet in 'Model\uConveterDataSet.pas',
-  uControlerEndereco in '..\Client\Controller\uControlerEndereco.pas';
+  uConveterDataSet in 'Model\uConveterDataSet.pas';
 
 {$R *.res}
 

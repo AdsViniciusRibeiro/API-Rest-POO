@@ -72,6 +72,7 @@ begin
     raise Exception.Create(MsgErro);
   end;
 
+  Qry.LastCommand.Records.FieldByName('SCOPE_IDENTITY()').AsInteger;
   Result := True;
   Qry.Free;
 end;

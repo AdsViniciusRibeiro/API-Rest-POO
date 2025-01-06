@@ -12,6 +12,7 @@ object FrmVCL: TFrmVCL
   Font.Height = -29
   Font.Name = 'Tahoma'
   Font.Style = []
+  OldCreateOrder = True
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
