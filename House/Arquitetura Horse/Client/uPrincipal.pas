@@ -44,10 +44,6 @@ type
     MTBPessoadtregistro: TDateField;
     MTBPessoadscep: TStringField;
     edtCEP: TLabeledEdit;
-    RESTRequest1: TRESTRequest;
-    RESTClient1: TRESTClient;
-    RESTRequest2: TRESTRequest;
-    RESTResponse1: TRESTResponse;
     MTBPessoaidendereco: TIntegerField;
     procedure FormShow(Sender: TObject);
     procedure btnGravarPessoaClick(Sender: TObject);
@@ -207,14 +203,12 @@ begin
     finally
       FreeAndNil(objPessoa);
       FreeAndNil(objControlePessoa);
-      FreeAndNil(ObjThreadEndereco);
       ListarTodasPessoas;
     end;
   except on E: Exception do
     begin
       FreeAndNil(objPessoa);
       FreeAndNil(objControlePessoa);
-      FreeAndNil(ObjThreadEndereco);
     end;
   end;
 

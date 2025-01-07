@@ -3,7 +3,10 @@ unit Main.Form;
 interface
 
 uses Winapi.Windows, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.Buttons, System.SysUtils, FireDAC.Comp.Client, uConexao, DataSetConverter4D, DataSetConverter4D.Impl;
+  Vcl.Buttons, System.SysUtils, FireDAC.Comp.Client, uConexao, DataSetConverter4D, DataSetConverter4D.Impl,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+  FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+  FireDAC.Stan.Async, FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet;
 
 type
   TFrmVCL = class(TForm)
@@ -11,6 +14,7 @@ type
     btnStart: TBitBtn;
     Label1: TLabel;
     edtPort: TEdit;
+    qryExecJson: TFDQuery;
     procedure btnStopClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnStartClick(Sender: TObject);
@@ -19,6 +23,9 @@ type
     procedure Status;
     procedure Start;
     procedure Stop;
+    procedure Pessoa;
+    procedure CEP;
+    procedure Endereco;
 
     var
       TConexao : TConexaoPG;
@@ -60,6 +67,16 @@ begin
       Res.Send(ReverseString(Req.Params.Items['param']));
     end);
 
+   Pessoa;
+   CEP;
+   Endereco;
+end;
+
+procedure TFrmVCL.Pessoa;
+var
+  JsonObj: TJSONObject;
+  ObjArray : TJSONArray;
+begin
   //Pessoa
   THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDPessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
@@ -95,7 +112,7 @@ begin
       JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
 
       if JsonObj.Count > 1 then
-        TConexao.ExecutarScript('update pessoa set flnatureza =:NATUREZA , dsdocumento =:DOCUMENTO, ' +
+        TConexao.ExecutarScript('update pessoa set flnatureza =:NATUREZA, dsdocumento =:DOCUMENTO, ' +
                                                    'nmprimeiro =:NOME, nmsegundo =:SOBRENOME, dtregistro =:DATA ' +
                                 'where idpessoa =:ID',
                                 [JsonObj.GetValue<Integer>('Natureza'),
@@ -105,137 +122,49 @@ begin
                                 StrToDate(JsonObj.GetValue<string>('DataRegistro')),
                                 JsonObj.GetValue<Integer>('IDPessoa')],
                                 'Erro ao alterar Pessoa.');
-      JsonObj.Free;
     end);
 
   THorse.Post('datasnap/rest/TServerMethods/Pessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
+    var
+      i : Integer;
+      sJsonString : WideString;
     begin
-      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+      sJsonString := Req.Body;
 
-      if JsonObj.Count > 1 then
-        TConexao.ExecutarScript('insert into pessoa values ' +
-                                '(:Codigo, :Natureza, :Documento, :Nome, :Sobrenome, :Data)',
-                                [JsonObj.GetValue<Integer>('IDPessoa'),
-                                JsonObj.GetValue<Integer>('Natureza'),
-                                JsonObj.GetValue<string>('Documento'),
-                                JsonObj.GetValue<string>('PrimeiroNome'),
-                                JsonObj.GetValue<string>('SegundoNome'),
-                                StrToDate(JsonObj.GetValue<string>('DataRegistro'))],
-                                'Erro ao inserir Pessoa.');
-      JsonObj.Free;
-    end);
+      if LeftStr(Req.Body, 1) <> '[' then
+        sJsonString := '[' + sJsonString;
 
-    //CEP
-    THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDCEP',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      try
-        Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select COALESCE(MAX(IDEndereco), 0) + 1 MaiorID from endereco', []));
-      except on E: Exception do
-         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
-      end;
-    end);
+      if RightStr(Req.Body, 1) <> ']' then
+        sJsonString := sJsonString + ']';
 
-    THorse.Get('datasnap/rest/TServerMethods/CEP/:IDEndereco/:IDPessoa',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      try
-        Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select * from endereco where idendereco =:ID and idpessoa =:IDPESSOA',
-                                                           [Req.Params.Items['IDEndereco'].ToInteger,
-                                                            Req.Params.Items['IDPessoa'].ToInteger])).Status(THTTPStatus.OK);
-      except on E: Exception do
-         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
-      end;
-    end);
+      ObjArray := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sJsonString), 0) as TJSONArray;
 
-    THorse.Delete('datasnap/rest/TServerMethods/CEP/:IDEndereco/:IDPessoa',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      try
-        TConexao.ExecutarScript('Delete from endereco where idendereco =:ID and idpessoa =:IDPESSOA',
-                                [Req.Params.Items['IDEndereco'].ToInteger,
-                                 Req.Params.Items['IDPessoa'].ToInteger]);
-      except on E: Exception do
-         Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
-      end;
-    end);
+      qryExecJson.Connection := TConexao.GetConexao;
+      qryExecJson.SQL.Text := 'insert into pessoa values ' +
+                            '(:Codigo, :Natureza, :Documento, :Nome, :Sobrenome, :Data)';
 
-    THorse.Post('datasnap/rest/TServerMethods/CEP',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+      qryExecJson.Params.ArraySize := ObjArray.Count;
 
-      if JsonObj.Count > 1 then
-        if TConexao.ExecutarScript('insert into endereco (idendereco, idpessoa, dscep) values ' +
-                                  '(:IDENREDECO, :IDPESSOA, :CEP)',
-                                   [JsonObj.GetValue<Integer>('IDEndereco'),
-                                    JsonObj.GetValue<Integer>('IDPessoa'),
-                                    JsonObj.GetValue<Integer>('CEP')],
-                                    'Erro ao inserir CEP.') then
+      for I := 0 to Pred(ObjArray.Count) do
+      begin
+        //Converter JsonArray para JsonObject
+        jsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(ObjArray.Items[i].ToString), 0) as TJSONObject;
+
+        //Passa os parametros
+        if JsonObj.Count > 1 then
         begin
-          //Res.Send<TJSONObject>(JsonObj).Status(THTTPStatus.Created);
+          qryExecJson.ParamByName('CODIGO').AsIntegers[i]   := JsonObj.GetValue<Integer>('IDPessoa');
+          qryExecJson.ParamByName('NATUREZA').AsIntegers[i] := JsonObj.GetValue<Integer>('Natureza');
+          qryExecJson.ParamByName('DOCUMENTO').AsStrings[i] := JsonObj.GetValue<string>('Documento');
+          qryExecJson.ParamByName('NOME').AsStrings[i]      := JsonObj.GetValue<string>('PrimeiroNome');
+          qryExecJson.ParamByName('SOBRENOME').AsStrings[i] := JsonObj.GetValue<string>('SegundoNome');
+          qryExecJson.ParamByName('DATA').AsDateTimes[i]    := StrToDate(JsonObj.GetValue<string>('DataRegistro'));
         end;
-      JsonObj.Free;
-    end);
-
-    THorse.Put('datasnap/rest/TServerMethods/CEP',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
-
-      if JsonObj.Count > 1 then
-      begin
-        if TConexao.ExecutarScript('update endereco set dscep =:CEP where idendereco =:IDENDERECO and idpessoa =:IDPESSOA ',
-                                  [JsonObj.GetValue<Integer>('CEP'),
-                                  JsonObj.GetValue<Integer>('IDEndereco'),
-                                  JsonObj.GetValue<Integer>('IDPessoa')],
-                                  'Erro ao alterar CEP.') then
-
       end;
-      JsonObj.Free;
-    end);
-
-    //Endereço
-    THorse.Post('datasnap/rest/TServerMethods/Endereco',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
-
-      if JsonObj.Count > 1 then
-        TConexao.ExecutarScript('insert into endereco_integracao values ' +
-                                '(:IDEENDERECO, :UF, :CIDADE, :BAIRRO, :LOGRADOURO, :COMPLEMENTO)',
-                                [JsonObj.GetValue<Integer>('IDEndereco'),
-                                 JsonObj.GetValue<string>('Logradouro'),
-                                 JsonObj.GetValue<string>('Bairro'),
-                                 JsonObj.GetValue<string>('UF'),
-                                 JsonObj.GetValue<string>('Complemento'),
-                                 JsonObj.GetValue<string>('Cidade')],
-                                'Erro ao inserir endereço.');
 
       JsonObj.Free;
-    end);
-
-    THorse.Put('datasnap/rest/TServerMethods/Endereco',
-    procedure(Req: THorseRequest; Res: THorseResponse)
-    begin
-      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
-
-      if JsonObj.Count > 1 then
-      begin
-        if TConexao.ExecutarScript('update endereco_integracao set dsuf =:UF , nmcidade =:CIDADE, nmbairro =:BAIRRO, ' +
-                                                                   'nmlogradouro =:LOGRADOURO, dscomplemento =:COMPLEMENTO ' +
-                                   'where idendereco =:IDENDERECO',
-                                    [JsonObj.GetValue<string>('UF'),
-                                     JsonObj.GetValue<string>('Cidade'),
-                                     JsonObj.GetValue<string>('Bairro'),
-                                     JsonObj.GetValue<string>('Logradouro'),
-                                     JsonObj.GetValue<string>('Complemento'),
-                                     JsonObj.GetValue<Integer>('IDEndereco')],
-                                    'Erro ao alterar endereço.') then
-
-      end;
-      JsonObj.Free;
+      qryExecJson.Execute(ObjArray.Count, 0);
     end);
 end;
 
@@ -268,6 +197,172 @@ procedure TFrmVCL.btnStopClick(Sender: TObject);
 begin
   Stop;
   Status;
+end;
+
+procedure TFrmVCL.CEP;
+var
+  JsonObj: TJSONObject;
+  ObjArray : TJSONArray;
+begin
+  THorse.Post('datasnap/rest/TServerMethods/CEP',
+    procedure(Req: THorseRequest; Res: THorseResponse)
+    var
+      i : Integer;
+      sJsonString : WideString;
+    begin
+      sJsonString := Req.Body;
+
+      if LeftStr(Req.Body, 1) <> '[' then
+        sJsonString := '[' + sJsonString;
+
+      if RightStr(Req.Body, 1) <> ']' then
+        sJsonString := sJsonString + ']';
+
+      ObjArray := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sJsonString), 0) as TJSONArray;
+
+      qryExecJson.Connection := TConexao.GetConexao;
+      qryExecJson.SQL.Text := 'insert into endereco (idendereco, idpessoa, dscep) values ' +
+                            '(:IDENREDECO, :IDPESSOA, :CEP)';
+      qryExecJson.Params.ArraySize := ObjArray.Count;
+
+      for I := 0 to Pred(ObjArray.Count) do
+      begin
+        //Converter JsonArray para JsonObject
+        jsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(ObjArray.Items[i].ToString), 0) as TJSONObject;
+
+        //Passa os parametros
+        if JsonObj.Count > 1 then
+        begin
+          qryExecJson.ParamByName('IDENREDECO').AsIntegers[i]   := JsonObj.GetValue<Integer>('IDEndereco');
+          qryExecJson.ParamByName('IDPESSOA').AsIntegers[i] := JsonObj.GetValue<Integer>('IDPessoa');
+          qryExecJson.ParamByName('CEP').AsStrings[i]      := JsonObj.GetValue<string>('CEP');
+        end;
+      end;
+
+      qryExecJson.Execute(ObjArray.Count, 0);
+      JsonObj.Free;
+    end);
+
+  THorse.Put('datasnap/rest/TServerMethods/CEP',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  begin
+    JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+
+    if JsonObj.Count > 1 then
+    begin
+      if TConexao.ExecutarScript('update endereco set dscep =:CEP where idendereco =:IDENDERECO and idpessoa =:IDPESSOA ',
+                                [JsonObj.GetValue<Integer>('CEP'),
+                                JsonObj.GetValue<Integer>('IDEndereco'),
+                                JsonObj.GetValue<Integer>('IDPessoa')],
+                                'Erro ao alterar CEP.') then
+
+    end;
+    JsonObj.Free;
+  end);
+
+  THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDCEP',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  begin
+    try
+      Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select COALESCE(MAX(IDEndereco), 0) + 1 MaiorID from endereco', []));
+    except on E: Exception do
+       Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
+    end;
+  end);
+
+  THorse.Get('datasnap/rest/TServerMethods/CEP/:IDEndereco/:IDPessoa',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  begin
+    try
+      Res.Send<TJSONObject>(TConexao.DataSetToJsonObject('Select * from endereco where idendereco =:ID and idpessoa =:IDPESSOA',
+                                                         [Req.Params.Items['IDEndereco'].ToInteger,
+                                                          Req.Params.Items['IDPessoa'].ToInteger])).Status(THTTPStatus.OK);
+    except on E: Exception do
+       Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
+    end;
+  end);
+
+  THorse.Delete('datasnap/rest/TServerMethods/CEP/:IDEndereco/:IDPessoa',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  begin
+    try
+      TConexao.ExecutarScript('Delete from endereco where idendereco =:ID and idpessoa =:IDPESSOA',
+                              [Req.Params.Items['IDEndereco'].ToInteger,
+                               Req.Params.Items['IDPessoa'].ToInteger]);
+    except on E: Exception do
+       Res.Send(TJSONObject.Create.AddPair('Mensagem', E.Message));
+    end;
+  end);
+end;
+
+procedure TFrmVCL.Endereco;
+var
+  JsonObj: TJSONObject;
+begin
+  THorse.Post('datasnap/rest/TServerMethods/Endereco',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  var
+    i : Integer;
+    sJsonString : WideString;
+    ObjArray : TJSONArray;
+  begin
+    sJsonString := Req.Body;
+
+    if LeftStr(Req.Body, 1) <> '[' then
+      sJsonString := '[' + sJsonString;
+
+    if RightStr(Req.Body, 1) <> ']' then
+      sJsonString := sJsonString + ']';
+
+    ObjArray := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sJsonString), 0) as TJSONArray;
+
+    qryExecJson.Connection := TConexao.GetConexao;
+    qryExecJson.SQL.Text := 'insert into endereco_integracao values ' +
+                            '(:IDEENDERECO, :UF, :CIDADE, :BAIRRO, :LOGRADOURO, :COMPLEMENTO)';
+    qryExecJson.Params.ArraySize := ObjArray.Count;
+
+    for I := 0 to Pred(ObjArray.Count) do
+    begin
+      //Converter JsonArray para JsonObject
+      jsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(ObjArray.Items[i].ToString), 0) as TJSONObject;
+
+      //Passa os parametros
+      if JsonObj.Count > 1 then
+      begin
+        qryExecJson.ParamByName('IDEENDERECO').AsIntegers[i] := JsonObj.GetValue<Integer>('IDEndereco');
+        qryExecJson.ParamByName('UF').AsStrings[i]           := JsonObj.GetValue<string>('UF');
+        qryExecJson.ParamByName('CIDADE').AsStrings[i]       := JsonObj.GetValue<string>('Cidade');
+        qryExecJson.ParamByName('BAIRRO').AsStrings[i]       := JsonObj.GetValue<string>('Bairro');
+        qryExecJson.ParamByName('LOGRADOURO').AsStrings[i]   := JsonObj.GetValue<string>('Logradouro');
+        qryExecJson.ParamByName('COMPLEMENTO').AsStrings[i]  := JsonObj.GetValue<string>('Complemento');
+      end;
+    end;
+
+    qryExecJson.Execute(ObjArray.Count, 0);
+    JsonObj.Free;
+  end);
+
+  THorse.Put('datasnap/rest/TServerMethods/Endereco',
+  procedure(Req: THorseRequest; Res: THorseResponse)
+  begin
+    JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+
+    if JsonObj.Count > 1 then
+    begin
+      if TConexao.ExecutarScript('update endereco_integracao set dsuf =:UF , nmcidade =:CIDADE, nmbairro =:BAIRRO, ' +
+                                                                 'nmlogradouro =:LOGRADOURO, dscomplemento =:COMPLEMENTO ' +
+                                 'where idendereco =:IDENDERECO',
+                                  [JsonObj.GetValue<string>('UF'),
+                                   JsonObj.GetValue<string>('Cidade'),
+                                   JsonObj.GetValue<string>('Bairro'),
+                                   JsonObj.GetValue<string>('Logradouro'),
+                                   JsonObj.GetValue<string>('Complemento'),
+                                   JsonObj.GetValue<Integer>('IDEndereco')],
+                                  'Erro ao alterar endereço.') then
+
+    end;
+    JsonObj.Free;
+  end);
 end;
 
 end.

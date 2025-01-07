@@ -12,6 +12,7 @@ object FrmVCL: TFrmVCL
   Font.Height = -29
   Font.Name = 'Tahoma'
   Font.Style = []
+  OldCreateOrder = True
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
@@ -67,5 +68,38 @@ object FrmVCL: TFrmVCL
     NumbersOnly = True
     TabOrder = 2
     Text = '8080'
+  end
+  object qryExecJson: TFDQuery
+    SQL.Strings = (
+      'insert into pessoa values '
+      '(:Codigo, :Natureza, :Documento, :Nome, :Sobrenome, :Data)')
+    Left = 424
+    Top = 8
+    ParamData = <
+      item
+        Name = 'CODIGO'
+        ParamType = ptInput
+        Value = Null
+      end
+      item
+        Name = 'NATUREZA'
+        ParamType = ptInput
+      end
+      item
+        Name = 'DOCUMENTO'
+        ParamType = ptInput
+      end
+      item
+        Name = 'NOME'
+        ParamType = ptInput
+      end
+      item
+        Name = 'SOBRENOME'
+        ParamType = ptInput
+      end
+      item
+        Name = 'DATA'
+        ParamType = ptInput
+      end>
   end
 end
