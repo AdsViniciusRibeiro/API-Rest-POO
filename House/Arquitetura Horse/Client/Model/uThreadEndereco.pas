@@ -59,7 +59,7 @@ end;
 constructor TThreadEndereco.Create(Metodo : TRESTRequestMethod);
 begin
   inherited Create(False);
-  FreeOnTerminate := True;
+  //FreeOnTerminate := True;
   FMetodo := Metodo;
   Priority := TpLower;
   Execute;

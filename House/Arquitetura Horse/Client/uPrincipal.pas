@@ -201,6 +201,7 @@ begin
       end;
 
     finally
+      FreeAndNil(ObjThreadEndereco);
       FreeAndNil(objPessoa);
       FreeAndNil(objControlePessoa);
       ListarTodasPessoas;
