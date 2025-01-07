@@ -2,7 +2,7 @@ program Client;
 
 uses
   Vcl.Forms,
-  uPrincipal in 'uPrincipal.pas' {Form10},
+  uPrincipal in 'uPrincipal.pas' {frmPrincipal},
   uPessoa in 'Model\uPessoa.pas',
   uClasseAPI in 'Model\uClasseAPI.pas',
   uClasseCEP in 'Model\uClasseCEP.pas',
@@ -10,13 +10,13 @@ uses
   uControleCEP in 'Controller\uControleCEP.pas',
   uControlePessoa in 'Controller\uControlePessoa.pas',
   uControleEndereco in 'Controller\uControleEndereco.pas',
-  uClasseThreadEndereco in 'Model\uClasseThreadEndereco.pas';
+  uThreadEndereco in 'Model\uThreadEndereco.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TfrmPessoa, frmPessoa);
+  Application.CreateForm(TfrmPrincipal, frmPrincipal);
   Application.Run;
 end.

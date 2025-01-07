@@ -10,14 +10,15 @@ uses
   FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet,
   FireDAC.Comp.Client, DataSetConverter4D, DataSetConverter4D.Impl, REST.Types,
   REST.Client, Data.Bind.Components, Data.Bind.ObjectScope, System.JSON, System.StrUtils,
-  IdHTTP;
+  IdHTTP, uClasseEndereco, uControleEndereco, uClasseCEP, uControleCEP,
+  uPessoa, uControlePessoa;
 
 type
   TPesquisa = (pTodos, pPorID, pMaiorIDPessoa, pMaiorIDEndereco, pInsert);
   TControleBotoes = (cInicial, cInsersao, cEdicao);
   TCrud = (cInsert, cEditar, cExcluir);
 
-  TfrmPessoa = class(TForm)
+  TfrmPrincipal = class(TForm)
     pnlCampos: TPanel;
     edtCodigo: TLabeledEdit;
     edtDocumento: TLabeledEdit;
@@ -47,6 +48,7 @@ type
     RESTClient1: TRESTClient;
     RESTRequest2: TRESTRequest;
     RESTResponse1: TRESTResponse;
+    MTBPessoaidendereco: TIntegerField;
     procedure FormShow(Sender: TObject);
     procedure btnGravarPessoaClick(Sender: TObject);
     procedure btnCancelarPessoaClick(Sender: TObject);
@@ -56,10 +58,8 @@ type
     procedure dgbPessoaCellClick(Column: TColumn);
   private
     { Private declarations }
-    function APIJson(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod) : WideString;
     procedure ControlaBotoes(Controle : TControleBotoes);
-    function MontaURL(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod; CodPessoa : String = '') : String;
-    procedure ListarTodasPessoas(sjSon : WideString);
+    procedure ListarTodasPessoas;
     procedure CRUD;
 
     var
@@ -67,24 +67,35 @@ type
 
   public
     { Public declarations }
+    IDEndereco : Integer;
   end;
 
 var
-  frmPessoa: TfrmPessoa;
+  frmPrincipal : TfrmPrincipal;
 
 implementation
 
 uses
-  System.SysUtils, uPessoa, uControlePessoa, uClasseCEP, uControleCEP,
-  uClasseThreadEndereco;
+  System.SysUtils, uThreadEndereco, uClasseAPI;
 
 {$R *.dfm}
 
-procedure TfrmPessoa.ListarTodasPessoas(sjSon : WideString);
+procedure TfrmPrincipal.ListarTodasPessoas;
 var
+  API : TAPI;
   JsonObj : TJSONArray;
+  ObJPessoa : TPessoa;
+  sjSon : WideString;
 begin
   try
+    if not MTBPessoa.Active then
+       MTBPessoa.CreateDataSet
+    else
+      MTBPessoa.EmptyDataSet;
+
+    ObJPessoa := TPessoa.Create;
+    sjSon := ObJPessoa.EnviaAPI(ObJPessoa, rmGET, ObJPessoa.URL, '');
+
     if sjSon <> '' then
     begin
       jsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sjSon), 0) as TJSONArray;
@@ -93,34 +104,11 @@ begin
   except on E: Exception do
     ShowMessage('Erro ao converter Json.')
   end;
+
+  FreeAndNil(ObJPessoa);
 end;
 
-function TfrmPessoa.MontaURL(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod; CodPessoa : String = '') : String;
-var
-  CompletaURL : String;
-begin
- CompletaURL := 'http://localhost:8080/datasnap/rest/TServerMethods/';
-
- case TipoRetorno of
-   pTodos: CompletaURL := CompletaURL + 'Pessoa';
-   pPorID: ;
-   pMaiorIDPessoa: CompletaURL := CompletaURL + 'RetornaMaiorIDPessoa';
-   pMaiorIDEndereco: ;
-   pInsert: CompletaURL := CompletaURL + 'acceptInsertPessoa';
- end;
-
- Result := CompletaURL;
-
- { case Metodo of
-    rmPOST   : CompletaURL := ifThen(CodPesquisa = '', '', '/' + CodPesquisa + ifThen(Serie <> '', '/' + Serie));
-    rmPUT    : CompletaURL := ifThen(CodPesquisa = '', '', '/' + CodPesquisa + ifThen(Serie <> '', '/' + Serie));
-    rmGET    : CompletaURL := ifThen(CodPesquisa = '', 's', '/' + CodPesquisa + ifThen(Serie <> '', '/' + Serie));
-    rmDELETE : CompletaURL := ifThen(CodPesquisa = '', 's', '/' + CodPesquisa + ifThen(Serie <> '', '/' + Serie));
-    rmPATCH  : ;
-  end;  }
-end;
-
-procedure TfrmPessoa.ControlaBotoes(Controle : TControleBotoes);
+procedure TfrmPrincipal.ControlaBotoes(Controle : TControleBotoes);
 begin
   case Controle of
     cInicial: begin
@@ -184,20 +172,15 @@ begin
   end;
 end;
 
-procedure TfrmPessoa.CRUD;
+procedure TfrmPrincipal.CRUD;
 var
   objPessoa: TPessoa;
-  ObjCEP : TCEP;
   objControlePessoa: TControlePessoa;
-  ObjControleCEP : TControleCEP;
   ObjThreadEndereco : TThreadEndereco;
 begin
   try
     objPessoa         := TPessoa.Create;
-    //ObjCEP            := TCEP.Create;
     objControlePessoa := TControlePessoa.Create;
-    //ObjControleCEP    := TControleCEP.Create;
-    ObjThreadEndereco := TThreadEndereco.Create;
 
     try
       objPessoa.IDPessoa     := StrToInt(edtCodigo.Text);
@@ -207,31 +190,29 @@ begin
       objPessoa.SegundoNome  := edtSobrenome.Text;
       objPessoa.DataRegistro := Date;
 
-      {ObjCEP.IDPessoa  := objPessoa.IDPessoa;
-      ObjCEP.CEP       := edtCEP.Text;}
-
       case AcaoCrud of
         cInsert: begin
                     objControlePessoa.Salvar(objPessoa);
-
-                    ObjThreadEndereco.Start;
-                    //ObjControleCEP.Salvar(ObjCEP);
+                    ObjThreadEndereco := TThreadEndereco.Create(rmPOST);
                  end;
-        cEditar: objControlePessoa.Editar(objPessoa);
+
+        cEditar: begin
+                   objControlePessoa.Editar(objPessoa);
+                   ObjThreadEndereco := TThreadEndereco.Create(rmPUT);
+                 end;
+
         cExcluir: objControlePessoa.Excluir(objPessoa);
       end;
 
     finally
       FreeAndNil(objPessoa);
-      //FreeAndNil(ObjCEP);
       FreeAndNil(objControlePessoa);
       FreeAndNil(ObjThreadEndereco);
-      //FreeAndNil(ObjControleCEP)
+      ListarTodasPessoas;
     end;
   except on E: Exception do
     begin
       FreeAndNil(objPessoa);
-      //FreeAndNil(ObjCEP);
       FreeAndNil(objControlePessoa);
       FreeAndNil(ObjThreadEndereco);
     end;
@@ -240,7 +221,7 @@ begin
   ControlaBotoes(cInicial);
 end;
 
-procedure TfrmPessoa.dgbPessoaCellClick(Column: TColumn);
+procedure TfrmPrincipal.dgbPessoaCellClick(Column: TColumn);
 begin
   edtCodigo.Text    := MTBPessoaidpessoa.AsString;
   edtDocumento.Text := MTBPessoadsdocumento.AsString;
@@ -250,76 +231,38 @@ begin
   CBTipoDocumento.ItemIndex := MTBPessoaflnatureza.AsInteger - 1;
 end;
 
-function TfrmPessoa.APIJson(TipoRetorno : TPesquisa; Metodo : TRESTRequestMethod) : WideString;
-var
-  CodRetorno   : Integer;
-  RESTClient   : TRESTClient;
-  RESTRequest  : TRESTRequest;
-  RESTResponse : TRESTResponse;
-  myThread : TThread;
-begin
-  try
-    try
-      RESTClient   := TRESTClient.Create(nil);
-      RESTRequest  := TRESTRequest.Create(nil);
-      RESTResponse := TRESTResponse.Create(nil);
-
-      //CLIENT
-      RESTClient.Accept        := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
-      RESTClient.AcceptCharset := 'utf-8, *;q=0.8';
-      RESTClient.BaseURL       := MontaURL(TipoRetorno, rmGET);
-
-      //RESPONSE
-      RESTResponse.ContentType := 'application/json';
-
-      //REQUEST
-      RESTRequest.Client   := RESTClient;
-      RESTRequest.Response := RESTResponse;
-      RESTRequest.Method   := Metodo;
-      RESTRequest.Execute;
-
-      Result     := RESTResponse.Content;
-      CodRetorno := RESTResponse.StatusCode;
-
-      //Clipboard.AsText := XML;
-    finally
-      FreeAndNil(RESTClient);
-      FreeAndNil(RESTRequest);
-      FreeAndNil(RESTResponse);
-    end;
-  except on E: Exception do
-    ShowMessage('Erro na conexão com API.');
-  end;
-end;
-
-procedure TfrmPessoa.btnCancelarPessoaClick(Sender: TObject);
+procedure TfrmPrincipal.btnCancelarPessoaClick(Sender: TObject);
 begin
   ControlaBotoes(cInicial);
 end;
 
-procedure TfrmPessoa.btnEditarPessoaClick(Sender: TObject);
+procedure TfrmPrincipal.btnEditarPessoaClick(Sender: TObject);
 begin
   ControlaBotoes(cEdicao);
   AcaoCrud := cEditar;
+  IDEndereco := MTBPessoa.FieldByName('IDEndereco').AsInteger;
 end;
 
-procedure TfrmPessoa.btnExcluirPessoaClick(Sender: TObject);
+procedure TfrmPrincipal.btnExcluirPessoaClick(Sender: TObject);
 begin
   AcaoCrud := cExcluir;
   CRUD;
 end;
 
-procedure TfrmPessoa.btnGravarPessoaClick(Sender: TObject);
+procedure TfrmPrincipal.btnGravarPessoaClick(Sender: TObject);
 begin
   CRUD;
 end;
 
-procedure TfrmPessoa.btnNovaPessoaClick(Sender: TObject);
+procedure TfrmPrincipal.btnNovaPessoaClick(Sender: TObject);
 var
   JsonObj : TJSONObject;
   sJson : WideString;
+  ObJPessoa : TPessoa;
 begin
-  sJson := APIJson(pMaiorIDPessoa, rmGET);
+  ObJPessoa := TPessoa.Create;
+  sjSon := ObJPessoa.EnviaAPI(ObJPessoa, rmGET, ObJPessoa.URLID, '');
+
   JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(sjSon), 0) as TJSONObject;
 
   ControlaBotoes(cInsersao);
@@ -327,12 +270,12 @@ begin
   CBTipoDocumento.SetFocus;
 
   AcaoCrud := cInsert;
+  IDEndereco := 0;
 end;
 
-procedure TfrmPessoa.FormShow(Sender: TObject);
+procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
-  MTBPessoa.CreateDataSet;
-  ListarTodasPessoas(APIJson(pTodos, rmGET));
+  ListarTodasPessoas;
 
   ControlaBotoes(cInicial);
 end;

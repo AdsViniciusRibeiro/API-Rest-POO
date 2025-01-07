@@ -17,9 +17,10 @@ type
     const
       URLCEP    = 'http://localhost:8080/datasnap/rest/TServerMethods/CEP';
       URLPessoa = 'http://localhost:8080/datasnap/rest/TServerMethods/Pessoa';
+      URLIDCEP  = 'http://localhost:8080/datasnap/rest/TServerMethods/RetornaMaiorIDCEP';
 
     public
-      constructor Create;
+      constructor Create(pIDEndereco : integer);
       destructor Destroy;
       function ObjetoToJson : WideString;
       procedure Salvar(const ObjCEP: TCEP);
@@ -46,7 +47,7 @@ var
   JsonObj : TJSONObject;
 begin
   API := TAPI.Create;
-  API.ConfigurarRestClient('http://localhost:8080/datasnap/rest/TServerMethods/RetornaMaiorIDCEP');
+  API.ConfigurarRestClient(URLIDCEP);
   API.ConfigurarRestRequest(rmGET);
   API.ConfigurarRestResponse('application/json');
   API.ExecutarAPI;
@@ -60,9 +61,12 @@ begin
   API.Free;
 end;
 
-constructor TCEP.Create;
+constructor TCEP.Create(pIDEndereco : integer);
 begin
-   IDEndereco := GerarID;
+  if pIDEndereco = 0 then
+   IDEndereco := GerarID
+  else
+    IDEndereco := pIDEndereco;
 end;
 
 procedure TCEP.Deletar(const ObjCEP: TCEP);

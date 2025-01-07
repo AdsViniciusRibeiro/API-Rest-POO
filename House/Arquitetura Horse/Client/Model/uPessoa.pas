@@ -13,6 +13,8 @@ type
     FPrimeiroNome : string;
     FSegundoNome : string;
     FDataRegistro : TDateTime;
+    FURLID: string;
+    FURL: string;
 
     procedure SetPrimeiroNome(const Value: string);
     procedure SetDataRegistro(const Value: TDateTime);
@@ -20,6 +22,12 @@ type
     procedure SetIDPessoa(const Value: Integer);
     procedure SetNatureza(const Value: Integer);
     procedure SetSegundoNome(const Value: string);
+    procedure SetURL(const Value: string);
+    procedure SetURLID(const Value: string);
+
+    const
+      sURL   = 'http://localhost:8080/datasnap/rest/TServerMethods/Pessoa';
+      sURLID = 'http://localhost:8080/datasnap/rest/TServerMethods/RetornaMaiorIDPessoa';
 
   public
     constructor Create;
@@ -28,7 +36,7 @@ type
     procedure Salvar(const ObjPessoa: TPessoa);
     procedure Editar(const ObjPessoa: TPessoa);
     procedure Deletar(const ObjPessoa: TPessoa);
-    procedure EnviaAPI(const ObjPessoa : TPessoa; Metodo : TRESTRequestMethod; Parametro : WideString);
+    function EnviaAPI(const ObjPessoa: TPessoa; Metodo : TRESTRequestMethod; pURL : String; Parametro : WideString = '') : WideString;
 
   published
     property IDPessoa: Integer read FIDPessoa write SetIDPessoa;
@@ -37,6 +45,8 @@ type
     property PrimeiroNome: string read FPrimeiroNome write SetPrimeiroNome;
     property SegundoNome: string read FSegundoNome write SetSegundoNome;
     property DataRegistro: TDateTime read FDataRegistro write SetDataRegistro;
+    property URL : string read FURL write SetURL;
+    property URLID : string read FURLID write SetURLID;
 
   end;
 
@@ -46,31 +56,27 @@ implementation
 
 uses uClasseAPI;
 
-procedure TPessoa.EnviaAPI(const ObjPessoa: TPessoa; Metodo : TRESTRequestMethod; Parametro : WideString);
+function TPessoa.EnviaAPI(const ObjPessoa: TPessoa; Metodo : TRESTRequestMethod; pURL : String; Parametro : WideString = '') : WideString;
 var
   API : TAPI;
 begin
   API := TAPI.Create;
 
-  API.ConfigurarRestClient('http://localhost:8080/datasnap/rest/TServerMethods/Pessoa');
+  API.ConfigurarRestClient(pURL);
   API.ConfigurarRestRequest(Metodo);
   API.ConfigurarRestResponse('application/json');
   API.ParametrosJson(Parametro);
   API.ExecutarAPI;
+
+  Result := API.JsonRetorno;
 
   API.Free;
 end;
 
 constructor TPessoa.Create;
 begin
-  // inicialização dos valores do objeto
-  {FIDPessoa := 0;
-  FNatureza := 0;
-  FDocumento := '';
-  FPrimeiroNome := '';
-  FSegundoNome := '';
-  FDataRegistro := '';
-  FCEP := ''; }
+  URL := sURL;
+  URLID := sURLID;
 end;
 
 procedure TPessoa.SetDataRegistro(const Value: TDateTime);
@@ -103,6 +109,16 @@ begin
   FSegundoNome := Value;
 end;
 
+procedure TPessoa.SetURL(const Value: string);
+begin
+  FURL := Value;
+end;
+
+procedure TPessoa.SetURLID(const Value: string);
+begin
+  FURLID := Value;
+end;
+
 destructor TPessoa.Destroy;
 begin
   Self.Free;
@@ -126,17 +142,17 @@ end;
 
 procedure TPessoa.Deletar(const ObjPessoa: TPessoa);
 begin
-  EnviaAPI(ObjPessoa, rmDELETE, IntToStr(FIDPessoa));
+  EnviaAPI(ObjPessoa, rmDELETE, sURL, IntToStr(FIDPessoa));
 end;
 
 procedure TPessoa.Editar(const ObjPessoa: TPessoa);
 begin
-  EnviaAPI(ObjPessoa, rmPUT, ObjetoToJson);
+  EnviaAPI(ObjPessoa, rmPUT, sURL,ObjetoToJson);
 end;
 
 procedure TPessoa.Salvar(const ObjPessoa: TPessoa);
 begin
-  EnviaAPI(ObjPessoa, rmPOST, ObjetoToJson);
+  EnviaAPI(ObjPessoa, rmPOST, sURL, ObjetoToJson);
 end;
 
 end.

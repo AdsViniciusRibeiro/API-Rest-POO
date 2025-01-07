@@ -24,11 +24,11 @@ type
       destructor Destroy;
       function ObjetoToJson : WideString;
       procedure Salvar(const ObjEndereco: TEndereco);
+      procedure Editar(const ObjEndereco: TEndereco);
       procedure ValidarCEP(const ObjEndereco : TEndereco);
       procedure EnviaAPI(const ObjCEP: TEndereco; Metodo : TRESTRequestMethod; Parametro : WideString);
 
     published
-      //property IDEndereco : integer read FIDEndereco write SetIDEndereco;
       property UF : string read FUF write SetUF;
       property Cidade : string read FCidade write SetCidade;
       property Bairro : string read FBairro write SetBairro;
@@ -44,32 +44,8 @@ implementation
 uses uClasseAPI;
 
 constructor TEndereco.Create;
-var
-  API : TAPI;
-  JsonObj : TJSONObject;
 begin
- { API := TAPI.Create;
 
-  API.ConfigurarRestClient(Format('http://viacep.com.br/ws/%s/json/', [CEP]));
-  API.ConfigurarRestRequest(rmGET);
-  API.ConfigurarRestResponse('application/json');
-  API.ExecutarAPI;
-
-  JsonObj := TJSONObject.Create;
-  JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(API.JsonRetorno), 0) as TJSONObject;
-
-  if JsonObj.Count > 1 then
-  begin
-    TEndereco.
-    FLogradouro  := JsonObj.GetValue<string>('logradouro');
-    FBairro      := JsonObj.GetValue<string>('bairro');
-    FUF          := JsonObj.GetValue<string>('uf');
-    FComplemento := JsonObj.GetValue<string>('complemento');
-    FCidade      := JsonObj.GetValue<string>('localidade');
-  end;
-
-  JsonObj.Free;
-  API.Free; }
 end;
 
 destructor TEndereco.Destroy;
@@ -112,6 +88,11 @@ end;
 procedure TEndereco.Salvar(const ObjEndereco: TEndereco);
 begin
   EnviaAPI(ObjEndereco, rmPOST, ObjetoToJson);
+end;
+
+procedure TEndereco.Editar(const ObjEndereco: TEndereco);
+begin
+  EnviaAPI(ObjEndereco, rmPUT, ObjetoToJson);
 end;
 
 procedure TEndereco.SetBairro(const Value: string);

@@ -60,6 +60,7 @@ begin
       Res.Send(ReverseString(Req.Params.Items['param']));
     end);
 
+  //Pessoa
   THorse.Get('datasnap/rest/TServerMethods/RetornaMaiorIDPessoa',
     procedure(Req: THorseRequest; Res: THorseResponse)
     begin
@@ -80,7 +81,7 @@ begin
     procedure(Req: THorseRequest; Res: THorseResponse)
     begin
       try
-        Res.Send<TJSONArray>(TConexao.DataSetToJsonArray('Select P.*, E.dscep ' +
+        Res.Send<TJSONArray>(TConexao.DataSetToJsonArray('Select P.*, E.dscep, idendereco ' +
                                                          'from pessoa P ' +
                                                          'inner join endereco E on E.idpessoa = P.idpessoa', []));
       except on E: Exception do
@@ -186,10 +187,10 @@ begin
       if JsonObj.Count > 1 then
       begin
         if TConexao.ExecutarScript('update endereco set dscep =:CEP where idendereco =:IDENDERECO and idpessoa =:IDPESSOA ',
-                                [JsonObj.GetValue<Integer>('CEP'),
-                                JsonObj.GetValue<Integer>('IDEndereco'),
-                                JsonObj.GetValue<Integer>('IDPessoa')],
-                                'Erro ao alterar CEP.') then
+                                  [JsonObj.GetValue<Integer>('CEP'),
+                                  JsonObj.GetValue<Integer>('IDEndereco'),
+                                  JsonObj.GetValue<Integer>('IDPessoa')],
+                                  'Erro ao alterar CEP.') then
 
       end;
       JsonObj.Free;
@@ -212,6 +213,28 @@ begin
                                  JsonObj.GetValue<string>('Cidade')],
                                 'Erro ao inserir endereço.');
 
+      JsonObj.Free;
+    end);
+
+    THorse.Put('datasnap/rest/TServerMethods/Endereco',
+    procedure(Req: THorseRequest; Res: THorseResponse)
+    begin
+      JsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0) as TJSONObject;
+
+      if JsonObj.Count > 1 then
+      begin
+        if TConexao.ExecutarScript('update endereco_integracao set dsuf =:UF , nmcidade =:CIDADE, nmbairro =:BAIRRO, ' +
+                                                                   'nmlogradouro =:LOGRADOURO, dscomplemento =:COMPLEMENTO ' +
+                                   'where idendereco =:IDENDERECO',
+                                    [JsonObj.GetValue<string>('UF'),
+                                     JsonObj.GetValue<string>('Cidade'),
+                                     JsonObj.GetValue<string>('Bairro'),
+                                     JsonObj.GetValue<string>('Logradouro'),
+                                     JsonObj.GetValue<string>('Complemento'),
+                                     JsonObj.GetValue<Integer>('IDEndereco')],
+                                    'Erro ao alterar endereço.') then
+
+      end;
       JsonObj.Free;
     end);
 end;

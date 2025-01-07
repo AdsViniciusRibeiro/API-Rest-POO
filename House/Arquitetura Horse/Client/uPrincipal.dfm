@@ -1,4 +1,4 @@
-object frmPessoa: TfrmPessoa
+object frmPrincipal: TfrmPrincipal
   Left = 0
   Top = 0
   Caption = 'Pessoa'
@@ -250,6 +250,7 @@ object frmPessoa: TfrmPessoa
       Margins.Bottom = 8
       Align = alClient
       DataSource = dsrPessoa
+      ReadOnly = True
       TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
@@ -291,6 +292,9 @@ object frmPessoa: TfrmPessoa
     end
     object MTBPessoadscep: TStringField
       FieldName = 'dscep'
+    end
+    object MTBPessoaidendereco: TIntegerField
+      FieldName = 'idendereco'
     end
   end
   object dsrPessoa: TDataSource

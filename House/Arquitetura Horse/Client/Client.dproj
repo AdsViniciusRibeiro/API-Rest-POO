@@ -102,7 +102,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="uPrincipal.pas">
-            <Form>Form10</Form>
+            <Form>frmPrincipal</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Model\uPessoa.pas"/>
@@ -112,7 +112,7 @@
         <DCCReference Include="Controller\uControleCEP.pas"/>
         <DCCReference Include="Controller\uControlePessoa.pas"/>
         <DCCReference Include="Controller\uControleEndereco.pas"/>
-        <DCCReference Include="Model\uClasseThreadEndereco.pas"/>
+        <DCCReference Include="Model\uThreadEndereco.pas"/>
         <None Include="ModelSupport_Client\default.txaPackage"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

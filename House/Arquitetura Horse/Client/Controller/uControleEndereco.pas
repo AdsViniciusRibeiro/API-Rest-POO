@@ -10,6 +10,7 @@ type
 
   public
     procedure Salvar(const ObjEndereco: TEndereco);
+    procedure Editar(const ObjEndereco: TEndereco);
     procedure ValidarEndereco(const ObjEndereco : TEndereco);
   end;
 
@@ -24,6 +25,12 @@ procedure TControleEndereco.Salvar(const ObjEndereco: TEndereco);
 begin
   ValidarEndereco(ObjEndereco);
   ObjEndereco.Salvar(ObjEndereco);
+end;
+
+procedure TControleEndereco.Editar(const ObjEndereco: TEndereco);
+begin
+  ValidarEndereco(ObjEndereco);
+  ObjEndereco.Editar(ObjEndereco);
 end;
 
 procedure TControleEndereco.ValidarEndereco(const ObjEndereco : TEndereco);
